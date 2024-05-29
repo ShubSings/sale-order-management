@@ -1,4 +1,3 @@
-// Navbar.tsx
 import React from "react";
 import { Flex, Button } from "@chakra-ui/react";
 import DarkModeSwitch from "./DarkModeSwitch";
@@ -15,9 +14,6 @@ const Navbar: React.FC = () => {
 
     return (
         <Flex justify="space-between" p={1} alignItems="center" boxShadow="md">
-            <Link to="/home">
-                {isAuthenticated && (<Button mr={2} colorScheme="teal">Home</Button>)}
-            </Link>
             <DarkModeSwitch />
             {isAuthenticated && (
                 <Button onClick={handleLogout} colorScheme="teal">Logout</Button>

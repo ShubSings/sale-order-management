@@ -1,32 +1,68 @@
-// src/components/SaleOrderForm.tsx
 import { useForm, Controller } from "react-hook-form";
-import { Button, Input, FormLabel, Box, Select } from "@chakra-ui/react";
+import { Button, Input, FormLabel, Box, Select as ChakraSelect, useToast, Flex } from "@chakra-ui/react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { productSchema } from "../api/saleOrders";
+import Multiselect from 'multiselect-react-dropdown';
 
 const SaleOrderForm = ({ defaultValues, onClose }: { defaultValues?: any; onClose: () => void }) => {
-    const { handleSubmit, control, formState: { errors } } = useForm({ defaultValues });
-
+    const { handleSubmit, control, formState: { errors }, setValue } = useForm({ defaultValues });
     const queryClient = useQueryClient();
+    const toast = useToast();
+
     const mutation = useMutation({
         mutationFn: async (data: any) => {
-            // Mimic API call
             await new Promise(resolve => setTimeout(resolve, 500));
             return data;
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["saleOrders"] });
+            toast({
+                title: "Sale order created.",
+                description: "Your sale order has been successfully created.",
+                status: "success",
+                duration: 5000,
+                isClosable: true,
+            });
         },
     });
 
+    const [products, setProducts] = useState<any[]>([]);
+    useEffect(() => {
+        const fetchProducts = async () => {
+            const productsData = await productSchema();
+            setProducts(productsData);
+        };
+        fetchProducts();
+    }, []);
+
     const onSubmit = (data: any) => {
+        console.log("data", data)
         mutation.mutate(data);
         onClose();
     };
 
     return (
         <Box as="form" onSubmit={handleSubmit(onSubmit)}>
+            <FormLabel>Products</FormLabel>
+            <Controller
+                name="products"
+                control={control}
+                render={({ field }) => (
+                    <Multiselect
+                        {...field}
+                        options={products}
+                        displayValue="name"
+                        onSelect={(selectedList: any) => {
+                            setValue("products", selectedList);
+                        }}
+                    />
+                )}
+            />
+            {errors.products && <span>{errors.products.message as string}</span>}
+
             <FormLabel>Customer ID</FormLabel>
             <Controller
                 name="customer_id"
@@ -50,7 +86,13 @@ const SaleOrderForm = ({ defaultValues, onClose }: { defaultValues?: any; onClos
                 name="invoice_date"
                 control={control}
                 rules={{ required: "Invoice Date is required" }}
-                render={({ field }) => <DatePicker {...field} selected={field.value} />}
+                render={({ field }) => (
+                    <DatePicker
+                        {...field}
+                        selected={field.value}
+                        onChange={(date) => field.onChange(date)}
+                    />
+                )}
             />
             {errors.invoice_date && <span>{errors.invoice_date.message as string}</span>}
 
@@ -59,14 +101,25 @@ const SaleOrderForm = ({ defaultValues, onClose }: { defaultValues?: any; onClos
                 name="paid"
                 control={control}
                 render={({ field }) => (
-                    <Select {...field}>
+                    <ChakraSelect {...field}>
+                        <option value="">Select an option</option>
                         <option value="true">Yes</option>
                         <option value="false">No</option>
-                    </Select>
+                    </ChakraSelect>
                 )}
             />
 
-            <Button mt={4} type="submit">Submit</Button>
+            <Flex justifyContent="flex-end">
+                <Button
+                    color={"white"}
+                    bg={"teal.400"}
+                    _hover={{ bg: "teal.300" }}
+                    mt={4}
+                    type="submit"
+                >
+                    Submit
+                </Button>
+            </Flex>
         </Box>
     );
 };
