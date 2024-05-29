@@ -1,12 +1,12 @@
-// src/App.tsx
+// App.tsx
 import React from "react";
 import AppRoutes from "./routes";
-import DarkModeSwitch from "./components/DarkModeSwitch";
+import Navbar from "./components/Navbar";
 
 const App: React.FC = () => {
   return (
     <>
-      <DarkModeSwitch />
+      <Navbar />
       <AppRoutes />
     </>
   );

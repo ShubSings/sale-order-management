@@ -1,9 +1,12 @@
+import React from "react";
+import ActiveSaleOrders from "../pages/ActiveSaleOrders";
 
-import { Box, Button } from "@chakra-ui/react";
+
 const Home = () => {
+
     return (
-        <h1>Home</h1>
-    )
-}
+        <ActiveSaleOrders />
+    );
+};
 
 export default Home;
