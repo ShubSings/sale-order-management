@@ -4,12 +4,14 @@ import { useQuery } from "@tanstack/react-query";
 import SaleOrderTable from "../components/SaleOrderTable";
 import SaleOrderModal from "../components/SaleOrderModal";
 import { Link } from "react-router-dom";
-import { fetchSaleOrders } from "../api/saleOrders"; // Import fetchSaleOrders from the API folder
+import { fetchAndCombineData } from "../api/saleOrders";
+
+
 
 const ActiveSaleOrders = () => {
     const { data: orders = [], refetch } = useQuery({
         queryKey: ["saleOrders"],
-        queryFn: fetchSaleOrders,
+        queryFn: fetchAndCombineData,
     });
 
     const [isModalOpen, setModalOpen] = useState(false);
@@ -45,7 +47,7 @@ const ActiveSaleOrders = () => {
                 </Box>
             </Flex>
             <Box width="100%" px="20px">
-                <SaleOrderTable orders={orders} onEdit={handleEditOrder} />
+                <SaleOrderTable orders={orders} onEdit={handleEditOrder} readOnly={false} />
             </Box>
             <SaleOrderModal
                 isOpen={isModalOpen}

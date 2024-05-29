@@ -1,7 +1,14 @@
+import React from 'react';
 import { Table, Tbody, Td, Th, Thead, Tr, Menu, MenuButton, MenuList, MenuItem, IconButton } from "@chakra-ui/react";
 import { FiMoreHorizontal } from "react-icons/fi";
 
-const SaleOrderTable = ({ orders, onEdit }: { orders: any[], onEdit: (order: any) => void }) => {
+interface SaleOrderTableProps {
+    orders: any[];
+    onEdit: (order: any) => void;
+    readOnly: boolean;
+}
+
+const SaleOrderTable: React.FC<SaleOrderTableProps> = ({ orders, onEdit, readOnly }) => {
     return (
         <Table>
             <Thead>
@@ -9,17 +16,17 @@ const SaleOrderTable = ({ orders, onEdit }: { orders: any[], onEdit: (order: any
                     <Th>ID</Th>
                     <Th>Customer Name</Th>
                     <Th>Price</Th>
-                    <Th>Last Modified</Th>
+                    <Th>Invoice Date</Th>
                     <Th>Actions</Th>
                 </Tr>
             </Thead>
             <Tbody>
                 {orders.map(order => (
-                    <Tr key={order.id}>
-                        <Td>{order.id}</Td>
+                    <Tr key={order.customer_id}>
+                        <Td>{order.customer_id}</Td>
                         <Td>{order.customer_profile.name}</Td>
-                        <Td>{order.price}</Td>
-                        <Td>{new Date(order.last_modified).toLocaleDateString()}</Td>
+                        <Td>{order.items[0].price}</Td>
+                        <Td>{new Date(order.invoice_date).toLocaleDateString()}</Td>
                         <Td>
                             <Menu>
                                 <MenuButton
@@ -29,7 +36,7 @@ const SaleOrderTable = ({ orders, onEdit }: { orders: any[], onEdit: (order: any
                                     variant="ghost"
                                 />
                                 <MenuList>
-                                    <MenuItem onClick={() => onEdit(order)}>Edit</MenuItem>
+                                    {!readOnly && <MenuItem onClick={() => onEdit(order)}>Edit</MenuItem>}
                                     <MenuItem>View</MenuItem>
                                 </MenuList>
                             </Menu>

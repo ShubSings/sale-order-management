@@ -1,7 +1,7 @@
 // api/saleOrders.ts
 
 // Function to fetch sale orders
-export const fetchSaleOrders = async () => {
+export const customerSchema = async () => {
   // Mimic API call
   return [
     {
@@ -18,8 +18,6 @@ export const fetchSaleOrders = async () => {
         profile_pic: null,
         gst: "",
       },
-      price: 100,
-      last_modified: "2024-05-24T12:46:41.995873Z",
     },
     {
       id: 10,
@@ -35,21 +33,19 @@ export const fetchSaleOrders = async () => {
         profile_pic: null,
         gst: "",
       },
-      price: 200,
-      last_modified: "2024-05-25T12:46:41.995873Z",
     },
   ];
 };
 
 // Function to fetch products
-export const fetchProducts = async () => {
+export const productSchema = async () => {
   // Mimic API call
   return [
     {
       id: 209,
       display_id: 8,
       owner: 1079,
-      name: "New Product",
+      name: "Product11",
       category: "The god of War",
       characteristics: "New Product Characteristics",
       features: "",
@@ -86,18 +82,59 @@ export const fetchProducts = async () => {
       updated_on: "2024-05-24T12:46:41.995873Z",
       adding_date: "2024-05-24T12:46:41.995828Z",
     },
+    {
+      id: 210,
+      display_id: 8,
+      owner: 1079,
+      name: "Product22",
+      category: "The MW",
+      characteristics: "New Product Characteristics",
+      features: "",
+      brand: "New Product Brand",
+      sku: [
+        {
+          id: 348,
+          selling_price: 54,
+          max_retail_price: 44,
+          amount: 33,
+          unit: "kg",
+          quantity_in_inventory: 0,
+          product: 209,
+        },
+        {
+          id: 347,
+          selling_price: 32,
+          max_retail_price: 32,
+          amount: 33,
+          unit: "kg",
+          quantity_in_inventory: 0,
+          product: 209,
+        },
+        {
+          id: 346,
+          selling_price: 23,
+          max_retail_price: 21,
+          amount: 22,
+          unit: "kg",
+          quantity_in_inventory: 1,
+          product: 209,
+        },
+      ],
+      updated_on: "2024-04-20T12:46:41.995873Z",
+      adding_date: "2024-04-20T12:46:41.995828Z",
+    },
   ];
 };
 
 // Function to fetch sale order form schema
-export const fetchSaleOrderForm = async () => {
+export const fetchSaleOrderFormSchema = async () => {
   // Mimic API call
   return [
     {
       customer_id: 11908,
       items: [
         {
-          sku_id: 220,
+          sku_id: 246,
           price: 12,
           quantity: 12,
         },
@@ -106,5 +143,44 @@ export const fetchSaleOrderForm = async () => {
       invoice_no: "Invoice - 1212121",
       invoice_date: "7/5/2024",
     },
+    {
+      customer_id: 12908,
+      items: [
+        {
+          sku_id: 247,
+          price: 32,
+          quantity: 2,
+        },
+      ],
+      paid: true,
+      invoice_no: "Invoice - 1212121",
+      invoice_date: "12/12/2024",
+    },
   ];
 };
+
+export const fetchAndCombineData = async () => {
+  const [saleOrders, customers] = await Promise.all([
+    fetchSaleOrderFormSchema(),
+    customerSchema(),
+  ]);
+
+  // Map customers by their ID for easy lookup
+  const customerMap = new Map();
+  customers.forEach((customer) => {
+    customerMap.set(customer.customer_profile.id, customer.customer_profile);
+  });
+
+  // Combine sale orders with corresponding customer data
+  const combinedData = saleOrders.map((order) => {
+    const customerProfile = customerMap.get(order.customer_id);
+    return {
+      ...order,
+      customer_profile: customerProfile,
+    };
+  });
+  console.log("cmoeDat", combinedData);
+  return combinedData;
+};
+
+
