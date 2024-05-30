@@ -40,7 +40,7 @@ const CompletedSaleOrders = () => {
                 {isLoading ? (
                     <div>Loading...</div>
                 ) : (
-                        <SaleOrderTable orders={completedOrders} onEdit={handleViewOrder} readOnly={true} />
+                        <SaleOrderTable orders={completedOrders} submittedFormData={null} onEdit={handleViewOrder} readOnly={true} />
                 )}
             </Box>
             <SaleOrderModal
@@ -49,6 +49,8 @@ const CompletedSaleOrders = () => {
                 order={viewingOrder}
             // readOnly={true}
                 mode="edit"
+                onFormSubmit={() => { }}
+
             />
         </Flex>
     );
