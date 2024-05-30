@@ -40,7 +40,6 @@ const SaleOrderForm = ({ defaultValues, onClose, mode, onSubmit }: { defaultValu
             if (mode === "edit") {
                 // return await updateSaleOrder(data);
             } else if (mode === "new") {
-                console.log("new", data);
                 return await createSaleOrder(data);
             }
         },
@@ -132,7 +131,7 @@ const SaleOrderForm = ({ defaultValues, onClose, mode, onSubmit }: { defaultValu
             />
             {errors.invoice_date && <span>{errors.invoice_date.message as string}</span>}
 
-            <FormLabel>SKU id (unit Kg)</FormLabel>
+            <FormLabel>SKU (unit Kg)</FormLabel>
             <Controller
                 name="sku_id"
                 control={control}
