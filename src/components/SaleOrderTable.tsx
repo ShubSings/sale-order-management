@@ -5,6 +5,7 @@ import SaleOrderModal from "./SaleOrderModal";
 
 interface SaleOrderTableProps {
     orders: any[];
+    submittedFormData: any; 
     onEdit: (order: any) => void;
     readOnly: boolean;
 }
@@ -47,8 +48,8 @@ const SaleOrderTable: React.FC<SaleOrderTableProps> = ({ orders, onEdit, readOnl
                     {orders.map(order => (
                         <Tr key={order.customer_id}>
                             <Td>{order.customer_id}</Td>
-                            <Td>{order.customer_profile.name}</Td>
-                            <Td>{order.items[0].price}</Td>
+                            <Td>{order.customer_name}</Td>
+                            <Td>{order.selling_rate}</Td>
                             <Td>{new Date(order.invoice_date).toLocaleDateString()}</Td>
                             <Td>
                                 <Menu>
@@ -69,7 +70,7 @@ const SaleOrderTable: React.FC<SaleOrderTableProps> = ({ orders, onEdit, readOnl
                 </Tbody>
             </Table>
 
-            <SaleOrderModal isOpen={isModalOpen} onClose={handleCloseModal} order={selectedOrder} mode={mode} />
+            <SaleOrderModal isOpen={isModalOpen} onClose={handleCloseModal} order={selectedOrder} mode={mode} onFormSubmit={() => { }} />
         </>
     );
 };

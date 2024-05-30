@@ -4,31 +4,48 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { productSchema, updateSaleOrder } from "../api/saleOrders";
+import { createSaleOrder, generateCustomerId } from "../api/saleOrders";
 import Multiselect from 'multiselect-react-dropdown';
 import "../style/SaleOrderForm.css";
+import { productSchema } from "../data/productData";
 
-const SaleOrderForm = ({ defaultValues, onClose, mode }: { defaultValues?: any; onClose: () => void; mode: "view" | "edit" | "new" }) => {
+
+const SaleOrderForm = ({ defaultValues, onClose, mode, onSubmit }: { defaultValues?: any; onClose: () => void; mode: "view" | "edit" | "new"; onSubmit: (data: any) => void }) => {
     const { handleSubmit, control, formState: { errors }, setValue } = useForm({ defaultValues });
     const queryClient = useQueryClient();
     const toast = useToast();
     const { colorMode } = useColorMode();
 
+
+    useEffect(() => {
+        if (defaultValues) {
+
+            const productNames = defaultValues.items.map((item: any) => item.skuData.productName);
+
+            setValue("product_name", productNames || '');
+            setValue("customer_name", defaultValues.customer_profile.name || '');
+            setValue("selling_rate", defaultValues.items[0]?.price || '');
+            setValue("quantity", defaultValues.items[0]?.quantity || '');
+            setValue("sku_id", defaultValues.items[0]?.sku_id || '');
+            setValue("sku_selling_rate", defaultValues.items[0]?.skuData.selling_price || '');
+            setValue("total_items", defaultValues.items[0]?.quantity || '');
+            setValue("invoice_no", defaultValues.invoice_no || '');
+            setValue("invoice_date", defaultValues.invoice_date ? new Date(defaultValues.invoice_date) : null);
+            setValue("paid", defaultValues.paid ? "true" : "false");
+        }
+    }, [defaultValues, setValue]);
+
     const mutation = useMutation({
         mutationFn: async (data: any) => {
-            const updatedOrder = await updateSaleOrder(data);
-            console.log("updatedOrder", updatedOrder);
-            return updatedOrder;
+            if (mode === "edit") {
+                // return await updateSaleOrder(data);
+            } else if (mode === "new") {
+                console.log("new", data);
+                return await createSaleOrder(data);
+            }
         },
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ["saleOrders"] });
-            toast({
-                title: "Sale order updated.",
-                description: "Your sale order has been successfully updated.",
-                status: "success",
-                duration: 5000,
-                isClosable: true,
-            });
         },
     });
 
@@ -41,24 +58,25 @@ const SaleOrderForm = ({ defaultValues, onClose, mode }: { defaultValues?: any; 
         fetchProducts();
     }, []);
 
-    const onSubmit = (data: any) => {
-        if (mode === "edit") {
-            console.log("sub", data);
-            mutation.mutate(data);
-        }
+    const onSubmits = (data: any) => {
+        const customer_id = generateCustomerId();
+        data = { ...data, customer_id };
+        onSubmit(data);
+        mutation.mutate(data);
         onClose();
     };
 
     return (
-        <Box as="form" onSubmit={handleSubmit(onSubmit)}>
-            <FormLabel>Products</FormLabel>
-            <Controller
-                name="products"
+        <Box as="form" onSubmit={handleSubmit(onSubmits)}>
+            {mode === "new" &&
+                <Controller
+                name="product_name"
                 control={control}
                 render={({ field }) => (
                     <Multiselect
                         {...field}
                         options={products}
+                        closeOnSelect={false}
                         displayValue="name"
                         className={`custom-multiselect ${colorMode === "dark" ? "custom-multiselect-dark" : "custom-multiselect-light"}`}
                         onSelect={(selectedList: any) => {
@@ -73,15 +91,14 @@ const SaleOrderForm = ({ defaultValues, onClose, mode }: { defaultValues?: any; 
                                 color: colorMode === "dark" ? "#e2e8f0" : "#333",
                             },
                         }}
-                        disable={mode === "view"}
                     />
                 )}
-            />
+                />}
             {errors.products && <span>{errors.products.message as string}</span>}
 
-            <FormLabel>Customer ID</FormLabel>
+            <FormLabel>Customer name</FormLabel>
             <Controller
-                name="customer_id"
+                name="customer_name"
                 control={control}
                 rules={{ required: "Customer ID is required" }}
                 render={({ field }) => <Input {...field} isReadOnly={mode === "view"} />}
@@ -115,6 +132,38 @@ const SaleOrderForm = ({ defaultValues, onClose, mode }: { defaultValues?: any; 
             />
             {errors.invoice_date && <span>{errors.invoice_date.message as string}</span>}
 
+            <FormLabel>SKU id (unit Kg)</FormLabel>
+            <Controller
+                name="sku_id"
+                control={control}
+                rules={{ required: "SKU id is required" }}
+                render={({ field }) => <Input {...field} isReadOnly={mode === "view"} />}
+            />
+            {errors.sku_id && <span>{errors.sku_id.message as string}</span>}
+
+            <Flex direction="row" justify={"space-between"} mt={4}>
+                <Box >
+                    <FormLabel>Selling rate</FormLabel>
+                    <Controller
+                        name="selling_rate"
+                        control={control}
+                        rules={{ required: "Selling rate is required" }}
+                        render={({ field }) => <Input {...field} isReadOnly={mode === "view"} />}
+                    />
+                    {errors.sku_selling_rate && <span>{errors.sku_selling_rate.message as string}</span>}
+                </Box>
+                <Box>
+                    <FormLabel>Quantity</FormLabel>
+                    <Controller
+                        name="quantity"
+                        control={control}
+                        rules={{ required: "Total items is required" }}
+                        render={({ field }) => <Input {...field} isReadOnly={mode === "view"} />}
+                    />
+                    {errors.total_items && <span>{errors.total_items.message as string}</span>}
+                </Box>
+            </Flex>
+
             <FormLabel>Paid</FormLabel>
             <Controller
                 name="paid"
@@ -127,6 +176,7 @@ const SaleOrderForm = ({ defaultValues, onClose, mode }: { defaultValues?: any; 
                     </ChakraSelect>
                 )}
             />
+
             {(mode === "edit" || mode === "new") && (
                 <Flex justifyContent="flex-end">
                     <Button
@@ -140,7 +190,6 @@ const SaleOrderForm = ({ defaultValues, onClose, mode }: { defaultValues?: any; 
                     </Button>
                 </Flex>
             )}
-
         </Box>
     );
 };
