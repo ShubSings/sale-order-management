@@ -14,10 +14,10 @@ const Navbar: React.FC = () => {
 
     return (
         <Flex justify="space-between" p={1} alignItems="center" boxShadow="md">
-            <DarkModeSwitch />
             {isAuthenticated && (
                 <Button onClick={handleLogout} colorScheme="teal">Logout</Button>
             )}
+            <DarkModeSwitch />
         </Flex>
     );
 };

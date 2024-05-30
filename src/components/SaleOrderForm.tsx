@@ -1,27 +1,30 @@
 import { useForm, Controller } from "react-hook-form";
-import { Button, Input, FormLabel, Box, Select as ChakraSelect, useToast, Flex } from "@chakra-ui/react";
+import { Button, Input, FormLabel, Box, Select as ChakraSelect, useToast, Flex, useColorMode } from "@chakra-ui/react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { productSchema } from "../api/saleOrders";
+import { productSchema, updateSaleOrder } from "../api/saleOrders";
 import Multiselect from 'multiselect-react-dropdown';
+import "../style/SaleOrderForm.css";
 
-const SaleOrderForm = ({ defaultValues, onClose }: { defaultValues?: any; onClose: () => void }) => {
+const SaleOrderForm = ({ defaultValues, onClose, mode }: { defaultValues?: any; onClose: () => void; mode: "view" | "edit" | "new" }) => {
     const { handleSubmit, control, formState: { errors }, setValue } = useForm({ defaultValues });
     const queryClient = useQueryClient();
     const toast = useToast();
+    const { colorMode } = useColorMode();
 
     const mutation = useMutation({
         mutationFn: async (data: any) => {
-            await new Promise(resolve => setTimeout(resolve, 500));
-            return data;
+            const updatedOrder = await updateSaleOrder(data);
+            console.log("updatedOrder", updatedOrder);
+            return updatedOrder;
         },
-        onSuccess: () => {
+        onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ["saleOrders"] });
             toast({
-                title: "Sale order created.",
-                description: "Your sale order has been successfully created.",
+                title: "Sale order updated.",
+                description: "Your sale order has been successfully updated.",
                 status: "success",
                 duration: 5000,
                 isClosable: true,
@@ -39,8 +42,10 @@ const SaleOrderForm = ({ defaultValues, onClose }: { defaultValues?: any; onClos
     }, []);
 
     const onSubmit = (data: any) => {
-        console.log("data", data)
-        mutation.mutate(data);
+        if (mode === "edit") {
+            console.log("sub", data);
+            mutation.mutate(data);
+        }
         onClose();
     };
 
@@ -55,9 +60,20 @@ const SaleOrderForm = ({ defaultValues, onClose }: { defaultValues?: any; onClos
                         {...field}
                         options={products}
                         displayValue="name"
+                        className={`custom-multiselect ${colorMode === "dark" ? "custom-multiselect-dark" : "custom-multiselect-light"}`}
                         onSelect={(selectedList: any) => {
                             setValue("products", selectedList);
                         }}
+                        style={{
+                            multiselectContainer: {
+                                color: colorMode === "dark" ? "#e2e8f0" : "#333",
+                            },
+                            optionContainer: {
+                                backgroundColor: colorMode === "dark" ? "#2d3748" : "#fff",
+                                color: colorMode === "dark" ? "#e2e8f0" : "#333",
+                            },
+                        }}
+                        disable={mode === "view"}
                     />
                 )}
             />
@@ -68,7 +84,7 @@ const SaleOrderForm = ({ defaultValues, onClose }: { defaultValues?: any; onClos
                 name="customer_id"
                 control={control}
                 rules={{ required: "Customer ID is required" }}
-                render={({ field }) => <Input {...field} />}
+                render={({ field }) => <Input {...field} isReadOnly={mode === "view"} />}
             />
             {errors.customer_id && <span>{errors.customer_id.message as string}</span>}
 
@@ -77,7 +93,7 @@ const SaleOrderForm = ({ defaultValues, onClose }: { defaultValues?: any; onClos
                 name="invoice_no"
                 control={control}
                 rules={{ required: "Invoice No is required" }}
-                render={({ field }) => <Input {...field} />}
+                render={({ field }) => <Input {...field} isReadOnly={mode === "view"} />}
             />
             {errors.invoice_no && <span>{errors.invoice_no.message as string}</span>}
 
@@ -89,8 +105,11 @@ const SaleOrderForm = ({ defaultValues, onClose }: { defaultValues?: any; onClos
                 render={({ field }) => (
                     <DatePicker
                         {...field}
+                        placeholderText="Select Date"
                         selected={field.value}
                         onChange={(date) => field.onChange(date)}
+                        className={`custom-datepicker ${colorMode === "dark" ? "custom-datepicker-dark" : "custom-datepicker-light"}`}
+                        readOnly={mode === "view"}
                     />
                 )}
             />
@@ -101,25 +120,27 @@ const SaleOrderForm = ({ defaultValues, onClose }: { defaultValues?: any; onClos
                 name="paid"
                 control={control}
                 render={({ field }) => (
-                    <ChakraSelect {...field}>
+                    <ChakraSelect {...field} isReadOnly={mode === "view"}>
                         <option value="">Select an option</option>
                         <option value="true">Yes</option>
                         <option value="false">No</option>
                     </ChakraSelect>
                 )}
             />
+            {(mode === "edit" || mode === "new") && (
+                <Flex justifyContent="flex-end">
+                    <Button
+                        color={"white"}
+                        bg={"teal.400"}
+                        _hover={{ bg: "teal.300" }}
+                        mt={4}
+                        type="submit"
+                    >
+                        Submit
+                    </Button>
+                </Flex>
+            )}
 
-            <Flex justifyContent="flex-end">
-                <Button
-                    color={"white"}
-                    bg={"teal.400"}
-                    _hover={{ bg: "teal.300" }}
-                    mt={4}
-                    type="submit"
-                >
-                    Submit
-                </Button>
-            </Flex>
         </Box>
     );
 };
