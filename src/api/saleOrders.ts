@@ -22,7 +22,6 @@ export const createSaleOrder = async (newOrderData: any) => {
     ),
   };
 
-  console.log("transformedOrder", transformedOrder);
   addSaleOrder(transformedOrder);
 
   return transformedOrder;
@@ -66,7 +65,6 @@ export const fetchAndCombineData = async () => {
     };
   });
 
-  console.log("cmoeDat", combinedData);
   return combinedData;
 };
 
