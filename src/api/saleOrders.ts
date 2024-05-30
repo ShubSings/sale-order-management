@@ -160,9 +160,10 @@ export const fetchSaleOrderFormSchema = async () => {
 };
 
 export const fetchAndCombineData = async () => {
-  const [saleOrders, customers] = await Promise.all([
+  const [saleOrders, customers, products] = await Promise.all([
     fetchSaleOrderFormSchema(),
     customerSchema(),
+    productSchema(),
   ]);
 
   // Map customers by their ID for easy lookup
@@ -171,16 +172,56 @@ export const fetchAndCombineData = async () => {
     customerMap.set(customer.customer_profile.id, customer.customer_profile);
   });
 
-  // Combine sale orders with corresponding customer data
+  // Map SKUs by their ID for easy lookup
+  const skuMap = new Map();
+  products.forEach((product) => {
+    product.sku.forEach((sku) => {
+      skuMap.set(sku.id, { ...sku, productName: product.name });
+    });
+  });
+
+  // Combine sale orders with corresponding customer and SKU data
   const combinedData = saleOrders.map((order) => {
     const customerProfile = customerMap.get(order.customer_id);
+    const itemsWithSku = order.items.map((item) => {
+      const skuData = skuMap.get(item.sku_id);
+      return {
+        ...item,
+        skuData,
+      };
+    });
     return {
       ...order,
       customer_profile: customerProfile,
+      items: itemsWithSku,
     };
   });
+
   console.log("cmoeDat", combinedData);
   return combinedData;
 };
+
+
+let saleOrders: any[] = [];
+
+const loadSaleOrders = async () => {
+  saleOrders = await fetchSaleOrderFormSchema();
+};
+
+export const updateSaleOrder = async (updatedOrder: { customer_id: any }) => {
+  console.log("saleOrders", saleOrders);
+  saleOrders = saleOrders.map((order) =>
+    order.customer_id === updatedOrder.customer_id ? updatedOrder : order
+  );
+  console.log("updatedOrder", updatedOrder);
+  return updatedOrder;
+};
+
+loadSaleOrders();
+
+
+// Update sale order function in api/saleOrders.ts
+
+
 
 

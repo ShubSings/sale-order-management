@@ -1,6 +1,4 @@
-// CompletedSaleOrders.js
-
-import React, { useState } from "react";
+import { useState } from "react";
 import { Box, Button, Flex } from "@chakra-ui/react";
 import { useQuery } from "@tanstack/react-query";
 import SaleOrderTable from "../components/SaleOrderTable";
@@ -50,6 +48,7 @@ const CompletedSaleOrders = () => {
                 onClose={() => setModalOpen(false)}
                 order={viewingOrder}
             // readOnly={true}
+                mode="edit"
             />
         </Flex>
     );

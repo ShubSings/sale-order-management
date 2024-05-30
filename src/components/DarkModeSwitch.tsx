@@ -6,8 +6,8 @@ const DarkModeSwitch = () => {
     return (
         <Flex justify="flex-end" alignItems="center">
             <Flex direction="column" alignItems="center">
-                <Text mt={1} fontSize="sm">{colorMode === "dark" ? "Light Mode" : "Dark Mode"}</Text>
                 <Switch isChecked={colorMode === "dark"} onChange={toggleColorMode} />
+                <Text mt={1} fontSize="sm">{colorMode === "dark" ? "<Light Mode" : "Dark Mode>"}</Text>
             </Flex>
         </Flex>
     );

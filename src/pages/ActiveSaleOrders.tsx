@@ -53,6 +53,7 @@ const ActiveSaleOrders = () => {
                 isOpen={isModalOpen}
                 onClose={() => setModalOpen(false)}
                 order={editingOrder}
+                mode="new"
             />
         </Flex>
     );
